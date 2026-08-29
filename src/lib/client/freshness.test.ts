@@ -32,6 +32,10 @@ describe("toDataStatus", () => {
     });
   });
 
+  it("클라이언트 클록이 수신 시각보다 뒤처져도 경과 시간을 음수로 보여주지 않는다", () => {
+    expect(toDataStatus(base, Date.parse(fetchedAt) - 5_000).ageSeconds).toBe(0);
+  });
+
   it("표시할 값이 없으면 unavailable로 투영한다", () => {
     expect(toDataStatus({ ...base, value: null, status: "error", fetchedAt: "" }, Date.now()))
       .toMatchObject({ dataStatus: "unavailable", ageSeconds: 0, lastGoodAt: null });

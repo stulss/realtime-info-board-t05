@@ -55,6 +55,7 @@ src/components/               대시보드·위젯·검증 UI
 src/lib/client/
   widget-state.ts             기존 실패 처리 (displayPayloadAfterFailure 재사용)
   freshness.ts                [T05 신규] toDataStatus() 순수 함수
+  clock.ts                    [T05 신규] 1초 단위 공용 클록 (useSyncExternalStore)
   use-simulate.ts             [T05 신규] ?simulate= 파라미터 훅
 tests/e2e/
   dashboard.spec.ts           기존 (수정 금지)

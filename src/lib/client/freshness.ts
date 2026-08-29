@@ -18,8 +18,9 @@ function formatTime(value: string): string {
 
 export function toDataStatus(payload: WidgetPayload, now: number): FreshnessState {
   const lastGoodAt = payload.sourceTimestamp ?? (payload.fetchedAt || null);
+  // 클라이언트 클록이 서버 수신 시각보다 뒤처지면 음수가 나오므로 0으로 고정한다.
   const ageSeconds = lastGoodAt
-    ? Math.floor((now - Date.parse(lastGoodAt)) / 1_000)
+    ? Math.max(0, Math.floor((now - Date.parse(lastGoodAt)) / 1_000))
     : 0;
   const dataStatus: DataStatus = !payload.value
     ? "unavailable"

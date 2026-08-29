@@ -24,7 +24,7 @@ function formatTime(value: string): string {
 
 export function FreshnessBadge({ dataStatus, ageSeconds, lastGoodAt, reasonText }: FreshnessBadgeProps) {
   const detail = dataStatus === "fresh"
-    ? `업데이트 ${lastGoodAt ? formatTime(lastGoodAt) : "시각 미제공"}`
+    ? `업데이트 ${lastGoodAt ? formatTime(lastGoodAt) : "시각 미제공"} · 경과 ${ageSeconds}s`
     : dataStatus === "stale"
       ? `마지막 정상 ${lastGoodAt ? formatTime(lastGoodAt) : "시각 미제공"} · 경과 ${ageSeconds}s`
       : "데이터를 가져오지 못했습니다";

@@ -18,6 +18,7 @@ import {
   fetchWidgetPayload,
 } from "@/lib/client/widget-state";
 import { toDataStatus } from "@/lib/client/freshness";
+import { SIMULATE_PLANS, useSimulate } from "@/lib/client/use-simulate";
 import { getCurrentTime, getServerTime, subscribeClock } from "@/lib/client/clock";
 import { FreshnessBadge } from "./freshness-badge";
 
@@ -81,18 +82,43 @@ function DashboardWidget({
 export function Dashboard() {
   const queryClient = useQueryClient();
   const now = useSyncExternalStore(subscribeClock, getCurrentTime, getServerTime);
+  const simulate = useSimulate();
   const freshnessQuery = useQuery({
     queryKey: ["widget", FRESHNESS_WIDGET.id, `/api/widgets/${FRESHNESS_WIDGET.id}`],
     queryFn: () => fetchWidgetPayload(`/api/widgets/${FRESHNESS_WIDGET.id}`),
     retry: false,
   });
-  const freshness = toDataStatus(freshnessQuery.data ?? {
-    value: null,
-    status: "refreshing",
-    source: { provider: FRESHNESS_WIDGET.name, docsUrl: "#", endpointTemplate: `/api/widgets/${FRESHNESS_WIDGET.id}` },
-    fetchedAt: "",
-    cacheAgeMs: 0,
-  }, now);
+  // ?simulate= 로 요청한 장애만 재현한다. 기존 검증 라우트를 그대로 재사용한다.
+  const simulateQuery = useQuery({
+    queryKey: ["t05-simulate", simulate],
+    enabled: simulate !== null,
+    retry: false,
+    queryFn: () => {
+      const plan = SIMULATE_PLANS[simulate!];
+      return fetchWidgetPayload(`/api/verification/failure?kind=${plan.kind}`, plan.timeoutMs);
+    },
+  });
+  const freshnessSource: WidgetPayload["source"] = {
+    provider: FRESHNESS_WIDGET.name,
+    docsUrl: "#",
+    endpointTemplate: `/api/widgets/${FRESHNESS_WIDGET.id}`,
+  };
+  // 장애 시에도 화면을 비우지 않는다. 이전 정상값을 유지한 채 배지만 stale로 바꾼다.
+  // empty(빈 DB)는 정상 수신 기록 자체가 없는 경우이므로 이전 값을 넘기지 않아 unavailable이 된다.
+  const freshnessPayload = simulate && simulateQuery.error
+    ? displayPayloadAfterFailure(
+      SIMULATE_PLANS[simulate].keepPrevious ? freshnessQuery.data : undefined,
+      simulateQuery.error,
+      freshnessSource,
+    )
+    : freshnessQuery.data ?? {
+      value: null,
+      status: "refreshing" as const,
+      source: freshnessSource,
+      fetchedAt: "",
+      cacheAgeMs: 0,
+    };
+  const freshness = toDataStatus(freshnessPayload, now);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === "undefined") return false;
     const savedTheme = window.localStorage.getItem("pulseboard-theme");

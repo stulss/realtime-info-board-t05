@@ -6,6 +6,8 @@ export type WidgetStatus =
   | "rate_limited"
   | "error";
 
+export type DataStatus = "fresh" | "stale" | "unavailable";
+
 export type WidgetFailureKind =
   | "timeout"
   | "unauthorized"

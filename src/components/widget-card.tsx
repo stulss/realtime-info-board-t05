@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { formatAbsoluteTime, formatCountdown, formatRelativeTime } from "@/lib/time";
 import { FAILURE_LABELS } from "@/lib/client/widget-state";
+import { getCurrentTime, getServerTime, subscribeClock } from "@/lib/client/clock";
 import type { WidgetPayload } from "@/types/widget";
 import { StatusBadge } from "./status-badge";
 
@@ -14,19 +15,6 @@ type WidgetCardProps = {
   onRefresh?: () => void;
   controls?: ReactNode;
 };
-
-function subscribeClock(onStoreChange: () => void): () => void {
-  const timer = window.setInterval(onStoreChange, 1_000);
-  return () => window.clearInterval(timer);
-}
-
-function getCurrentTime(): number {
-  return Date.now();
-}
-
-function getServerTime(): number {
-  return 0;
-}
 
 function TimeValue({ label, value, fallback, now }: { label: string; value?: string; fallback?: string; now: number }) {
   return (

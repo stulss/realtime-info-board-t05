@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import type { WidgetPayload } from "@/types/widget";
 import {
   DEFAULT_EXCHANGE_CURRENCY,
@@ -17,6 +17,9 @@ import {
   displayPayloadAfterFailure,
   fetchWidgetPayload,
 } from "@/lib/client/widget-state";
+import { toDataStatus } from "@/lib/client/freshness";
+import { getCurrentTime, getServerTime, subscribeClock } from "@/lib/client/clock";
+import { FreshnessBadge } from "./freshness-badge";
 
 const WIDGETS = [
   { id: "lostark-notices", name: "로스트아크 공지", icon: "⚔", interval: 15 * 60_000 },
@@ -25,6 +28,7 @@ const WIDGETS = [
   { id: "exchange-rate", name: "원·달러 고시환율", icon: "₩", interval: 60 * 60_000 },
   { id: "status", name: "GitHub 서비스 상태", icon: "◉", interval: 5 * 60_000 },
 ] as const;
+const FRESHNESS_WIDGET = WIDGETS.find(({ id }) => id === "status")!;
 
 function DashboardWidget({
   widget,
@@ -76,6 +80,19 @@ function DashboardWidget({
 
 export function Dashboard() {
   const queryClient = useQueryClient();
+  const now = useSyncExternalStore(subscribeClock, getCurrentTime, getServerTime);
+  const freshnessQuery = useQuery({
+    queryKey: ["widget", FRESHNESS_WIDGET.id, `/api/widgets/${FRESHNESS_WIDGET.id}`],
+    queryFn: () => fetchWidgetPayload(`/api/widgets/${FRESHNESS_WIDGET.id}`),
+    retry: false,
+  });
+  const freshness = toDataStatus(freshnessQuery.data ?? {
+    value: null,
+    status: "refreshing",
+    source: { provider: FRESHNESS_WIDGET.name, docsUrl: "#", endpointTemplate: `/api/widgets/${FRESHNESS_WIDGET.id}` },
+    fetchedAt: "",
+    cacheAgeMs: 0,
+  }, now);
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === "undefined") return false;
     const savedTheme = window.localStorage.getItem("pulseboard-theme");
@@ -121,6 +138,7 @@ export function Dashboard() {
       <header className="topbar">
         <div className="brand"><span className="brand-mark">P</span><span>Pulseboard</span></div>
         <div className="topbar-actions">
+          <FreshnessBadge {...freshness} />
           <Link className="text-link hide-mobile" href="/verification">상태 검증</Link>
           <button className="icon-button" type="button" onClick={toggleTheme} aria-label="테마 전환" suppressHydrationWarning>{isDark ? "☀" : "◐"}</button>
         </div>

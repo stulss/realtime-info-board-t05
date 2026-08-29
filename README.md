@@ -8,7 +8,7 @@
 - 작업 브랜치: `feature/t05-freshness-badge`
 - 진행 방식: AI A → 인계 문서 → AI B (대화 전문 없이 저장소만으로 이어받아 완성)
 - 공개 소스: `https://github.com/stulss/realtime-info-board-t05`
-- 최종 Vercel URL: 사용자 직접 배포·주소 전달 대기
+- 최종 Vercel URL: `https://realtime-info-board-t05.vercel.app/`
 
 ## 빠른 실행
 

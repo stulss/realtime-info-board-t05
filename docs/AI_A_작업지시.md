@@ -7,7 +7,7 @@
 - 작업 시간 15분 / 프롬프트·호출 10회. 시작·종료 시각과 실제 사용량을 `docs/04_작업_기록.md` 에 기록.
 
 ## 시작 상태
-- 브랜치 `feature/t05-freshness-badge`, 시작 커밋 `96d2048`.
+- 저장소 `github.com/stulss/realtime-info-board-t05` (private), 브랜치 `feature/t05-freshness-badge`, 계획 커밋 `fa41377` 위에서 시작 (T04 베이스 = `96d2048`).
 - 기존 코드: `WidgetPayload`(6-값 status), `displayPayloadAfterFailure()`(이전 값 유지+stale), `/api/verification/failure` 장애 API, `useSyncExternalStore` 1초 클록.
 
 ## AI A 목표 (이번 세션에서 여기까지)
